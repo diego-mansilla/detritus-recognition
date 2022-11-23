@@ -9,6 +9,32 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from sklearn import metrics
 
+def test_accuracy(model, test_dataset):
+    loss, accuracy = model.evaluate(test_dataset)
+    print('Test accuracy :', accuracy)
+    return accuracy
+
+def train_model(model, epochs):
+    print("Training model, epochs: ", epochs)
+    
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+    
+    history = model.fit(train_dataset,
+                    epochs=epochs,
+                    validation_data=validation_dataset,
+                    callbacks=[callback])
+    
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+
+    training_loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    
+    return history
+
+
 def print_tsne(model, dataset, n_iter = 1000):
     new_ds = dataset
     
@@ -61,7 +87,13 @@ def print_tsne(model, dataset, n_iter = 1000):
     
     ax.legend(loc='best')
 
-def show_plot(acc, val_acc, loss, val_loss, drop_value=0.0):
+def show_plot(history, drop_value=0.0):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+
+    training_loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    
     plt.figure(figsize=(8, 8))
     plt.subplot(2, 1, 1)
     plt.plot(acc, label='Training Accuracy')
