@@ -14,23 +14,17 @@ def test_accuracy(model, test_dataset):
     print('Test accuracy :', accuracy)
     return accuracy
 
-def train_model(model, epochs):
+def train_model(model, epochs, train_dataset, validation_dataset, lr, callbacks):
     print("Training model, epochs: ", epochs)
     
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
               loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy'])
     
     history = model.fit(train_dataset,
                     epochs=epochs,
                     validation_data=validation_dataset,
-                    callbacks=[callback])
-    
-    acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-
-    training_loss = history.history['loss']
-    val_loss = history.history['val_loss']
+                    callbacks=[callbacks])
     
     return history
 
@@ -91,7 +85,7 @@ def show_plot(history, drop_value=0.0):
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
 
-    training_loss = history.history['loss']
+    loss = history.history['loss']
     val_loss = history.history['val_loss']
     
     plt.figure(figsize=(8, 8))
@@ -114,7 +108,7 @@ def show_plot(history, drop_value=0.0):
     plt.show()
 
 def show_report(model, generator):
-    test_steps_per_epoch = numpy.math.ceil(generator.samples / generator.batch_size)
+    test_steps_per_epoch = np.math.ceil(generator.samples / generator.batch_size)
     predictions = densenet_model.predict(generator, steps=test_steps_per_epoch)
     
     y_pred = np.empty(len(predictions), dtype=float) 
@@ -126,3 +120,53 @@ def show_report(model, generator):
     class_labels = list(generator.class_indices.keys())   
     report = metrics.classification_report(true_classes, y_pred, target_names=class_labels)
     print(report)
+    
+def show_confusion_matrix(model, generator):
+    test_steps_per_epoch = np.math.ceil(generator.samples / generator.batch_size)
+    predictions = model.predict(generator, steps=test_steps_per_epoch)
+    
+    y_pred = np.empty(len(predictions), dtype=float) 
+    for i in range(len(predictions)):
+        score = tf.nn.sigmoid(predictions[i])
+        y_pred[i] = tf.where(score < 0.5, 0, 1)
+    
+    detr_list = ['LClass_Detritus', 'LClass_Bubbles', 'LClass_shadow']
+    
+    true_classes = generator.classes
+    filepaths = generator.filepaths
+    label_map = generator.class_indices
+    index_map = {v: k for k, v in label_map.items()}
+    
+    class_labels = list(generator.class_indices.keys()) 
+    correct =  {new_key: 0 for new_key in class_labels}
+    incorrect = {new_key: 0 for new_key in class_labels}
+    correct_files = []
+    incorrect_files = []
+    
+    
+    for i in range(len(true_classes)):
+        if any(index_map[true_classes[i]] in s for s in detr_list):
+            if (y_pred[i] == 0):
+                correct[index_map[true_classes[i]]] += 1
+                correct_files.append(filepaths[i])
+            else:
+                incorrect[index_map[true_classes[i]]] += 1
+                incorrect_files.append(filepaths[i])
+        else:
+            if (y_pred[i] == 1):
+                correct[index_map[true_classes[i]]] += 1
+                correct_files.append(filepaths[i])
+            else:
+                incorrect[index_map[true_classes[i]]] += 1
+                incorrect_files.append(filepaths[i])
+    # report = metrics.classification_report(true_classes, y_pred, target_names=class_labels)
+    for class_name in class_labels:
+        corr = correct[class_name]
+        incorr = incorrect[class_name]
+        total = corr + incorr
+        if (total == 0):
+            corr_perc = 0
+        else:
+            corr_perc = corr/total
+        print(class_name, corr, incorr, total, corr_perc)
+    return correct, incorrect, correct_files, incorrect_files
