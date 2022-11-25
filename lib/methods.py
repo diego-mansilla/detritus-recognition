@@ -109,7 +109,7 @@ def show_plot(history, drop_value=0.0):
 
 def show_report(model, generator):
     test_steps_per_epoch = np.math.ceil(generator.samples / generator.batch_size)
-    predictions = densenet_model.predict(generator, steps=test_steps_per_epoch)
+    predictions = model.predict(generator, steps=test_steps_per_epoch)
     
     y_pred = np.empty(len(predictions), dtype=float) 
     for i in range(len(predictions)):
