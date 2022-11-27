@@ -97,12 +97,10 @@ def get_model_B(drop_value=0.0, data_aug=False, l2_reg=0.0):
     return keras.Model(inputs, x)
 
 
-def get_mobile_net(drop_value=0.0, data_aug=False, l2_reg=0.0):
+def get_mobile_net_scratch(drop_value=0.0, data_aug=False, l2_reg=0.0):
     base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
                                                    include_top=False,
-                                                   weights='imagenet')
-
-    base_model.trainable = False
+                                                   weights=None)
 
     preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
     global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
