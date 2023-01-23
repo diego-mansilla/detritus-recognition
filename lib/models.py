@@ -19,7 +19,7 @@ tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
 # Custom simple CNN Models
 
 def get_model_A(drop_value=0.0, data_aug=False, l2_reg=0.0):
-    inputs = tf.keras.Input(shape=(160, 160, 3))
+    inputs = tf.keras.Input(shape=IMG_SHAPE)
     
     if data_aug:
         dag = data_augmentation(inputs)
@@ -60,7 +60,7 @@ def get_model_A(drop_value=0.0, data_aug=False, l2_reg=0.0):
 
 
 def get_model_B(drop_value=0.0, data_aug=False, l2_reg=0.0):
-    inputs = tf.keras.Input(shape=(160, 160, 3))
+    inputs = tf.keras.Input(shape=IMG_SHAPE)
     
     if data_aug:
         dag = data_augmentation(inputs)
@@ -106,7 +106,7 @@ def get_mobile_net_scratch(drop_value=0.0, data_aug=False, l2_reg=0.0):
     global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
     prediction_layer = tf.keras.layers.Dense(1)
 
-    inputs = tf.keras.Input(shape=(160, 160, 3))
+    inputs = tf.keras.Input(shape=IMG_SHAPE)
     if data_aug:
         dag = data_augmentation(inputs)
         x =  tf.keras.applications.mobilenet_v2.preprocess_input(dag)
@@ -132,7 +132,7 @@ def get_dense_net(drop_value=0.0, data_aug=False, l2_reg=0.0):
     dense_global_average_layer = tf.keras.layers.GlobalAveragePooling2D()
     dense_prediction_layer = tf.keras.layers.Dense(1)
 
-    dense_inputs = tf.keras.Input(shape=(160, 160, 3))
+    dense_inputs = tf.keras.Input(shape=IMG_SHAPE)
     if data_aug:
         dag = data_augmentation(dense_inputs)
         dense_x =  tf.keras.applications.densenet.preprocess_input(dag)
