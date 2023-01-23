@@ -1,0 +1,9 @@
+tensorflow==2.5.0
+numpy==1.19.2
+jupyter
+matplotlib
+scikit-learn
+pandas
+openpyxl
+plotly
+
